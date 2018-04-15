@@ -1,0 +1,55 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          pi4j-rest
+# Required-Start:
+# Required-Stop:
+# Default-Start:
+# Default-Stop:      6
+# Short-Description: Execute the pi4j-rest command.
+# Description:
+### END INIT INFO
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+
+. /lib/lsb/init-functions
+
+
+SERVICE_NAME=pi4j-rest
+PATH_TO_JAR=/home/pi/pi4j-rest-0.0.1-SNAPSHOT.jar
+PID_PATH_NAME=/tmp/pi4j-rest-pid
+
+do_stop () {
+   curl -X POST localhost:8080/application/shutdown
+   echo "$SERVICE_NAME stopped ..."
+   rm $PID_PATH_NAME
+}
+
+do_start() {
+   echo "Starting $SERVICE_NAME ..."
+   nohup java -Dspring.profiles.active=pi -jar $PATH_TO_JAR /tmp 2>> /dev/null >> /dev/null &
+   echo $! > $PID_PATH_NAME
+   echo "$SERVICE_NAME started ..."
+}
+
+case "$1" in
+  start)
+	do_start
+	;;
+  restart|reload|force-reload)
+    do_stop
+    do_start
+	;;
+  stop)
+	do_stop
+	;;
+  status)
+	curl http://localhost:8080/application/status
+	;;
+  *)
+	echo "Usage: $0 start|stop|restart|status" >&2
+	exit 3
+	;;
+esac
+
+exit 0

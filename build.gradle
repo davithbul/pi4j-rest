@@ -1,0 +1,109 @@
+buildscript {
+    ext {
+        springBootVersion = '2.0.0.BUILD-SNAPSHOT'
+    }
+    repositories {
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://repo.spring.io/snapshot" }
+        maven { url "https://repo.spring.io/milestone" }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath "org.hidetake:gradle-ssh-plugin:2.8.0"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: "io.spring.dependency-management"
+//apply plugin: 'application'
+apply plugin: 'org.springframework.boot'
+apply plugin: "org.hidetake.ssh"
+
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.spring.io/snapshot" }
+    maven { url "https://repo.spring.io/milestone" }
+}
+
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-web") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    compile("org.springframework.boot:spring-boot-starter-jetty")
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    compile('org.springframework.boot:spring-boot-starter-validation')
+
+    //pi4j dependencies
+    compile group: 'com.pi4j', name: 'pi4j-parent', version: '1.1'
+    compile group: 'com.pi4j', name: 'pi4j-core', version: '1.1'
+    compile group: 'com.pi4j', name: 'pi4j-gpio-extension', version: '1.1'
+    compile group: 'com.pi4j', name: 'pi4j-device', version: '1.1'
+
+    compile group: 'com.google.guava', name: 'guava', version: '23.0'
+
+    //pigpio
+    compile group: 'com.diozero', name: 'diozero-provider-pigpio', version: '0.10'
+    compile group: 'uk.pigpioj', name: 'pigpioj-java', version: '2.2'
+
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+
+
+    jar {
+        manifest {
+            attributes(
+                    'Main-Class': 'com.pi4jrest.Pi4jRestApplication',
+                    'Class-Path': configurations.compile.collect { "libs/" + it.getName() }.join(' ')
+            )
+        }
+    }
+
+    task fatJar(type: Jar) {
+        baseName = project.name + '-all'
+        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+        with jar
+    }
+
+    task copyDependencies(type: Copy) {
+        from(configurations.compile + configurations.testCompile) {
+            include "*.jar"
+        }
+        into rootProject.rootDir.getAbsolutePath() + "/build/dependencies"
+    }
+
+    uploadArchives {
+        repositories {
+            flatDir {
+                dirs 'build/output'
+            }
+        }
+    }
+
+    remotes {
+        webServer {
+            host = '192.168.0.XX'
+            user = 'pi'
+            password = 'raspberry'
+        }
+    }
+
+    task deploy(type: Exec) {
+        dependsOn assemble 
+        dependsOn uploadArchives
+        dependsOn copyDependencies
+        commandLine 'rsync', '-avz', './build/dependencies/', remotes.webServer.user + '@'+ remotes.webServer.host + ':/home/pi/libs/'
+        doLast {
+            ssh.run {
+                session(remotes.webServer) {
+                    put from: "./build/output/pi4j-rest-" + version + ".jar", into: '.'
+                }
+            }
+        }
+    }
+}

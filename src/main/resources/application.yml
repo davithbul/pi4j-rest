@@ -1,0 +1,19 @@
+logging:
+  level:
+    org.springframework.web: INFO
+    com.pi4jrest: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file: /tmp/pi4j-rest.log
+
+#actuator configurations
+management:
+  server:
+    servlet:
+      context-path: /application
+  endpoint:
+    shutdown:
+      enabled: true
+  endpoints:
+    enabled-by-default: true
