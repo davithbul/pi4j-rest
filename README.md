@@ -1,7 +1,6 @@
-Pi4J-rest allows to control your motors and to manage your raspberry pi digital input output pins using rest API.
-Pi4J-rest enhances pi4j library allowing thread safe control of motors.
+Pi4J-rest allows to control your motors and to manage your raspberry pi digital input output pins using rest API. Pi4J-rest enhances pi4j library allowing thread safe control of motors.
 
-## Setup pi
+## Setup Raspberry PI
    *  In order to connect to pi without password we need to execute following steps
     Generate key (note please enter instead of setting password):
                     ssh-keygen
@@ -28,7 +27,7 @@ Pi4J-rest enhances pi4j library allowing thread safe control of motors.
        sudo make install
 
 
-## Deploy project on pi
+## Deploy project on Raspberry PI
 
    *  install pi4j in raspberry pi machine
     a. login to pi
@@ -39,7 +38,7 @@ Pi4J-rest enhances pi4j library allowing thread safe control of motors.
 
 Now if you open browser and navigate to http://{RASPBERRY_PI_HOST}:8080/health you should see {"status":"UP"}
 
-## Setup pi4-rest as a service to run on raspberry pi start
+## Setup pi4-rest as a service to run on Raspberry PI start
    *  copy from project scripts/pi4j-rest to /etc/init.d/
 
    *  Give execution permission:
@@ -55,7 +54,3 @@ Now if you open browser and navigate to http://{RASPBERRY_PI_HOST}:8080/health y
     a. open /etc/rc.local
     b. add following line before 'exit 0' line
         /etc/init.d/pi4j-rest start
-
-
-
-   
