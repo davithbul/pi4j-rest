@@ -70,9 +70,9 @@ Now if you open browser and navigate to http://<YOUR_PI_HOST>:8080/health you sh
    ```   
 
    *  Register service to run on startup
-    a. open /etc/rc.local
-    b. add following line before 'exit 0' line
-        /etc/init.d/pi4j-rest start
+        1. open /etc/rc.local
+        2. add following line before 'exit 0' line
+            /etc/init.d/pi4j-rest start
         
         
    [Connect Raspberry to WiFi network]: <https://raspberrypihq.com/how-to-connect-your-raspberry-pi-to-wifi/>        
